@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -32,13 +33,18 @@ func Login(c *fiber.Ctx) error {
 	if p.Username == username && p.Password == password {
 		sId := uuid.New()
 		created := time.Now().UTC().Unix()
-		expires := time.Now().UTC().Add(time.Hour * 720).Unix()
+		//expires := time.Now().UTC().Unix()
+		//original
+		expires := time.Now().UTC().Add(time.Hour * 720)
 
 		c.Cookie(&fiber.Cookie{
-			Name:    "sid",
-			Value:   sId.String(),
-			MaxAge:  int(720 * time.Hour),
-			Expires: time.Now().UTC().Add(time.Hour * 720),
+			Name:     "sid",
+			Value:    sId.String(),
+			MaxAge:   int(720 * time.Hour),
+			Expires:  expires,
+			Secure:   false,
+			HTTPOnly: true,
+			SameSite: "none",
 		})
 
 		sessionModel := model.SessionModel{
@@ -46,7 +52,7 @@ func Login(c *fiber.Ctx) error {
 			Username:   username,
 			Device:     string(c.Context().UserAgent()),
 			Created_At: created,
-			Expiry:     expires,
+			Expiry:     expires.Unix(),
 		}
 		err = repository.AddSession(sessionModel)
 
@@ -126,7 +132,7 @@ func MiddlewareCheckUser(c *fiber.Ctx) error {
 
 	token, err := parseToken(t, c)
 
-	if token == nil {
+	if token == nil || err != nil {
 		fmt.Println(token, err)
 		return err
 	}
@@ -139,6 +145,12 @@ func MiddlewareCheckUser(c *fiber.Ctx) error {
 		return c.Status(401).JSON(&fiber.Map{"statusCode": 401, "statusMessage": "Un Authorized"})
 	}
 
+	dbResp, err := repository.GetSession(cSid)
+
+	fmt.Println("Middleware-check-user", dbResp, err)
+	if err != nil {
+		return c.Status(403).JSON(&fiber.Map{"statusCode": 3, "statusMessage": "Forbidden"})
+	}
 	return c.Next()
 }
 
@@ -153,10 +165,14 @@ func parseToken(t string, c *fiber.Ctx) (*jwt.Token, error) {
 	// Check for verification errors
 	if err != nil {
 		fmt.Println("controller-user-MiddlewareCheck-User-err", err)
+		if strings.Contains(err.Error(), "token is malformed") {
+			return nil, c.Status(403).JSON(&fiber.Map{"statusCode": 2, "statusMessage": "Token is not right"})
+		}
 		return nil, c.Status(401).JSON(&fiber.Map{"statusCode": 401, "statusMessage": "Token Expired"})
 
 	}
 	// Check if the token is valid
+	fmt.Println(token.Valid)
 	if !token.Valid {
 		//fmt.Errorf("invalid token")
 		return nil, c.Status(401).JSON(&fiber.Map{"statusCode": 403, "statusMessage": "Invalid token"})

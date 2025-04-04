@@ -24,23 +24,27 @@ func GetSession(sId string) (model.SessionModel, error) {
 	row, err := database.DBSplash.Query("SELECT * FROM session WHERE id=$1", sId)
 
 	if err != nil {
-		return model.SessionModel{}, errors.New("Some error in DB")
+		fmt.Println("Session-Check", err)
+		return model.SessionModel{}, errors.New("some error in dB")
 	}
 	defer row.Close()
+	if row.Next() {
+		for row.Next() {
+			switch err := row.Scan(&session.Id, &session.Created_At, &session.Expiry, &session.Device, &session.Last_Login, &session.Username); err {
+			case sql.ErrNoRows:
+				err = errors.New("no rows were returned")
 
-	for row.Next() {
-		switch err := row.Scan(&session.Id, &session.Created_At, &session.Expiry, &session.Device, &session.Last_Login, &session.Username); err {
+			case nil:
+				fmt.Println("successful transaction", session.Expiry)
+			default:
+				err = errors.New("no data is present")
+			}
 
-		case sql.ErrNoRows:
-			err = errors.New("no rows were returned")
-
-		case nil:
-			fmt.Println("successful transaction", session.Expiry)
-		default:
-			err = errors.New("no data is present")
 		}
-
+	} else {
+		err = errors.New("no data is present")
 	}
+
 	return session, err
 }
 
