@@ -108,6 +108,61 @@ func RegenerateToken(c *fiber.Ctx) error {
 	return c.JSON(&fiber.Map{"statusCode": 0, "token": token})
 }
 
+// endpoint to log out
+func Logout(c *fiber.Ctx) error {
+	cSid := ""
+	c.Request().Header.VisitAllCookie(func(key, value []byte) {
+		if string(key) == "sid" {
+			cSid = string(value)
+		}
+	})
+	if len(cSid) == 0 {
+		return c.Status(403).JSON(&fiber.Map{
+			"statusCode": 1,
+		})
+	}
+
+	err := repository.DeleteSession(cSid)
+
+	fmt.Println(err)
+	// if err != nil{
+	// 	return c.Status(500).JSON({"statusCode":1,message:"Some Error Happened"})
+	// }
+
+	return c.JSON(&fiber.Map{
+		"statusCode":    0,
+		"statusMessage": "Success",
+	})
+}
+
+// endpoint to get all session without pagiation
+func GetAllSessions(c *fiber.Ctx) error {
+	data, err := repository.GetAllSessions()
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"statusCode": 400,
+			"error":      err.Error(),
+		})
+	}
+
+	return c.JSON(&fiber.Map{
+		"statusCode": 0,
+		"data":       data,
+	})
+}
+
+// endpoint to get all session
+// func GetAllSessionsWithPagination(c *fiber.Ctx) error {
+// 	cSid := ""
+
+// 	if len(cSid) == 0 {
+// 		return c.Status(403).JSON(&fiber.Map{"statusCode": 2, "statusMessage": "Forbidden"})
+// 	}
+
+// 	//repository.GetSession()
+// }
+
 //*********************MIDDLEWARE ********************************
 //middleware to check
 //func MiddlewareCheckSession() error{}
@@ -187,7 +242,8 @@ func generateJWT(username string, sId string, c *fiber.Ctx) (string, error) {
 		"sub": username,                         // Subject (user identifier)
 		"iss": "pex",                            // Issuer
 		"exp": time.Now().Add(time.Hour).Unix(), // Expiration time
-		"iat": time.Now().Unix(),                // Issued at
+		//"exp": time.Now(),        // Expiration time as created tine for testing
+		"iat": time.Now().Unix(), // Issued at
 		"sid": sId,
 	})
 

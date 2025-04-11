@@ -10,6 +10,6 @@ type SessionModel struct {
 	Username   string
 	Device     string
 	Created_At int64
-	Last_Login int64
+	Last_Login *int64
 	Expiry     int64
 }

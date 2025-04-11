@@ -48,6 +48,11 @@ func GetSession(sId string) (model.SessionModel, error) {
 	return session, err
 }
 
+// get all sessions paginated, FE should pass the last id
+// func GetAllSessionsWithPagination(prevSid string) ([]model.SessionModel, error) {
+
+// }
+
 // update last login time
 func UpdateLoginTimeForSession(id string, lastLogin int64) {
 
@@ -58,8 +63,55 @@ func UpdateLoginTimeForSession(id string, lastLogin int64) {
 
 }
 
-// func DeleteSession(id string) error {
-// 	succ, err := database.DBSplash.Query("DELETE ")
+func DeleteSession(id string) error {
+	succ, err := database.DBSplash.Query("DELETE from session WHERE id=$1", id)
 
-// 	return
-// }
+	if err != nil {
+		fmt.Println("error", err)
+	}
+
+	fmt.Println("success", succ)
+
+	return err
+}
+
+func GetAllSessions() ([]model.SessionModel, error) {
+
+	allSession := []model.SessionModel{}
+
+	row, err := database.DBSplash.Query("SELECT ALL * FROM session")
+	if err != nil {
+		fmt.Println("Session-Check", err)
+		return []model.SessionModel{}, errors.New("some error in dB")
+	}
+	defer row.Close()
+
+	// row.Next() {
+	var session model.SessionModel
+	//session.Last_Login = int64(0)
+	for row.Next() {
+		if err := row.Scan(&session.Id, &session.Created_At, &session.Device, &session.Username, &session.Last_Login, &session.Expiry); err != nil {
+			return allSession, err
+		}
+		// case sql.ErrNoRows:
+		// 	err = errors.New("no rows were returned")
+
+		// case nil:
+		// 	fmt.Println("successful transaction", session.Expiry)
+		// default:
+		// 	err = errors.New("no data is present")
+		// }
+
+		allSession = append(allSession, session)
+
+	}
+	if err = row.Err(); err != nil {
+		return allSession, err
+	}
+	// } else {
+	// 	err = errors.New("no data is present")
+	//}
+
+	return allSession, err
+
+}
