@@ -6,10 +6,10 @@ type UserForm struct {
 }
 
 type SessionModel struct {
-	Id         string
-	Username   string
-	Device     string
-	Created_At int64
-	Last_Login *int64
-	Expiry     int64
+	Id         string `json:"id"`
+	Username   string `json:"username"`
+	Device     string `json:"device"`
+	Created_At int64  `json:"created_at"`
+	Last_Login *int64 `json:"last_login"`
+	Expiry     int64  `json:"expiry"`
 }
