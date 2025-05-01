@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -29,18 +28,21 @@ func GetSession(sId string) (model.SessionModel, error) {
 	}
 	defer row.Close()
 	if row.Next() {
-		for row.Next() {
-			switch err := row.Scan(&session.Id, &session.Created_At, &session.Expiry, &session.Device, &session.Last_Login, &session.Username); err {
-			case sql.ErrNoRows:
-				err = errors.New("no rows were returned")
-
-			case nil:
-				fmt.Println("successful transaction", session.Expiry)
-			default:
-				err = errors.New("no data is present")
-			}
-
+		//for row.Next() {
+		if err := row.Scan(&session.Id, &session.Created_At, &session.Device, &session.Username, &session.Last_Login, &session.Expiry); err != nil {
+			fmt.Println("Error when scanning get session", err.Error())
+			return model.SessionModel{}, err
 		}
+		// case sql.ErrNoRows:
+		// 	err = errors.New("no rows were returned")
+
+		// case nil:
+		// 	fmt.Println("successful transaction", session.Expiry)
+		// default:
+		// 	err = errors.New("no data is present")
+		// }
+
+		//}
 	} else {
 		err = errors.New("no data is present")
 	}

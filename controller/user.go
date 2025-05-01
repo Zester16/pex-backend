@@ -91,7 +91,13 @@ func RegenerateToken(c *fiber.Ctx) error {
 	session, err := repository.GetSession(cSid)
 
 	if err != nil {
-		fmt.Println("controller-user-regenerateToken-err", err)
+		fmt.Println("controller-user-regenerateToken-err", err.Error())
+
+		if err.Error() == "some error in dB" {
+			return c.Status(500).JSON(&fiber.Map{
+				"statusCode": 1, "statusMessage": "some error happened",
+			})
+		}
 		return c.Status(403).JSON(&fiber.Map{
 			"statusCode": 1, "statusMessage": "Forbidden",
 		})
@@ -203,7 +209,11 @@ func MiddlewareCheckUser(c *fiber.Ctx) error {
 	dbResp, err := repository.GetSession(cSid)
 
 	fmt.Println("Middleware-check-user", dbResp, err)
+
 	if err != nil {
+		if err.Error() == "some error in dB" {
+			return c.Status(500).JSON((&fiber.Map{"statusCode": "500", "statusMessage": "some error happened"}))
+		}
 		return c.Status(403).JSON(&fiber.Map{"statusCode": 3, "statusMessage": "Forbidden"})
 	}
 	return c.Next()
