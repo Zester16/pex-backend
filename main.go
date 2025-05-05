@@ -62,5 +62,8 @@ func main() {
 	// routing for user /v1/user
 	routes.RoutesUser(app)
 
+	//routing for news
+	routes.NewspaperRoutes(app)
+	routes.NewsReadRoutes(app)
 	log.Fatal(app.Listen(":4000"))
 }
