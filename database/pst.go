@@ -21,17 +21,32 @@ func ConnectDB() error {
 	}
 	fmt.Println("Database Connected")
 
+	createNewsPaperTable()
 	return nil
 }
 
-//stubbing this for future use
-// func CreateProductTable() {
-//     DB.Query(`CREATE TABLE IF NOT EXISTS products (
-//     id SERIAL PRIMARY KEY,
-//     amount integer,
-//     name text UNIQUE,
-//     description text,
-//     category text NOT NULL
-// )
-// `)
-// }
+// stubbing this for future use
+func createNewsPaperTable() {
+
+	_, err := DBSplash.Query(`CREATE TABLE IF NOT EXISTS newspaper (
+    id text PRIMARY KEY,
+    name text UNIQUE NOT NULL,
+    created_at int8 UNIQUE NOT NULL
+)
+`)
+	if err != nil {
+		fmt.Println("Database creation issue", err.Error())
+	}
+	_, errTwo := DBSplash.Query(`CREATE TABLE IF NOT EXISTS newsread (
+    id text PRIMARY KEY,
+    read_at int8 UNIQUE NOT NULL,
+	newspaper_id text NOT NULL,
+    CONSTRAINT newspaper_id FOREIGN KEY (newspaper_id)
+	REFERENCES newspaper(id)
+
+)
+`)
+	if errTwo != nil {
+		fmt.Println("Database creation issue", err.Error())
+	}
+}
