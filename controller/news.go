@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"time"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"pex.oschmid.com/model"
@@ -15,12 +16,22 @@ func AddNewspaper(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
 			"status": 1,
-
 			"message": err,
 		})
 
 	}
+	if p.Name == ""{
+		return c.Status(400).JSON(&fiber.Map{"statusCode":1,"statusMessage":"Kindly add name of newspaper"})	}
+	if p.Image_Url == ""{
+		return c.Status(400).JSON(&fiber.Map{"statusCode":1,"statusMessage":"Kindly add image url of newspaper"})
+	}
+	if p.Epaper_Url == ""{
+		return c.Status(400).JSON(&fiber.Map{"statusCode":1,"statusMessage":"epaper url should not be empty"})
+	}
+	
 	p.Id = uuid.New().String()
+	currentTime:=time.Now().UTC().Unix()
+	p.Created_At = &currentTime
 	err = repository.AddNewspaper(*p)
 
 	if err != nil {
@@ -52,6 +63,13 @@ func AddNewsRead(c *fiber.Ctx) error {
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
 
+//get all news letters in order as most read
 func GetPaginatedNewsLettter(c *fiber.Ctx) error {
 	return &fiber.Error{}
+}
+
+//********HELPER FUNCTION FOR checking new related errorß
+func checkNewspaperInputFromRequestBody() bool{
+
+	return true
 }
