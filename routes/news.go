@@ -9,6 +9,7 @@ func NewspaperRoutes(app *fiber.App) {
 
 	api := app.Group("v1/newspaper",controller.MiddlewareCheckUser)
 	api.Post("/", controller.AddNewspaper)
+	api.Get("/",controller.GetNewspapersPaginated)
 
 }
 

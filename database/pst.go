@@ -32,8 +32,10 @@ func createNewsPaperTable() {
     id text PRIMARY KEY,
     name text UNIQUE NOT NULL,
 	image_url text UNIQUE NOT NULL,
-	epaper_url text UNIQUE,
-    created_at int8 NOT NULL
+	epaper_url text NOT NULL,
+    created_at int8 NOT NULL,
+	total_read int,
+	last_read int8
 )
 `)
 	if err != nil {
