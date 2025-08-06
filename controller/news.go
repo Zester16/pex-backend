@@ -44,8 +44,6 @@ func AddNewspaper(c *fiber.Ctx) error {
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
 
-//****READ NEWS
-
 // Adds newspaper read date
 func AddNewsRead(c *fiber.Ctx) error {
 	p := new(model.NewspaperreadingModel)
@@ -67,6 +65,7 @@ func AddNewsRead(c *fiber.Ctx) error {
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
 
+// ****READ NEWS
 // get all news letters in order as most read
 func GetNewspapersPaginated(c *fiber.Ctx) error {
 
@@ -82,6 +81,15 @@ func GetNewspapersPaginated(c *fiber.Ctx) error {
 		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err})
 	}
 	return c.JSON(&fiber.Map{"statusCode": 0, "data": resp, "total": total})
+}
+
+func GetAllNewspapers(c *fiber.Ctx) error {
+	allNewspapers, err := repository.GetNewspapersAll()
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+	return c.JSON(&fiber.Map{"statusCode": 0, "data": allNewspapers})
 }
 
 // ********HELPER FUNCTION FOR checking new related errorß

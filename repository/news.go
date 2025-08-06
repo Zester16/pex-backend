@@ -16,6 +16,8 @@ func AddNewsRead(newsread model.NewspaperreadingModel) error {
 	return err
 }
 
+// ********** To Get Paginated newspaper list*********************************
+// first iteration does not need to pass id, but further iterations need to pass id
 func GetNewspaperPaginated(id string) ([]model.NewspaperModel, error) {
 
 	row, err := database.DBSplash.Query("SELECT id,name,image_url FROM newspaper where id > $1 ORDER BY id LIMIT 2", id)
@@ -40,6 +42,32 @@ func GetNewspaperPaginated(id string) ([]model.NewspaperModel, error) {
 	return newspapersList, nil
 }
 
+// ***********To get all newspapers list***************
+func GetNewspapersAll() ([]model.NewspaperModel, error) {
+
+	row, err := database.DBSplash.Query("SELECT id,name,image_url FROM newspaper")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer row.Close()
+	newspapersList := []model.NewspaperModel{}
+	for row.Next() {
+		var newspaper model.NewspaperModel
+
+		err := row.Scan(&newspaper.Id, &newspaper.Name, &newspaper.Image_Url)
+
+		if err != nil {
+			return []model.NewspaperModel{}, err
+		}
+		newspapersList = append(newspapersList, newspaper)
+	}
+
+	return newspapersList, nil
+}
+
+// ********** To get total newspaper count***************
 func GetNewspaperTotalCount() (int, error) {
 	row, err := database.DBSplash.Query("SELECT COUNT(*) from newspaper")
 	total := 0
