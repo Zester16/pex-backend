@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"pex.oschmid.com/database"
 	"pex.oschmid.com/model"
 )
@@ -80,4 +82,27 @@ func GetNewspaperTotalCount() (int, error) {
 		row.Scan(&total)
 	}
 	return total, nil
+}
+
+func GetNewsReadAll() ([]model.NewsFEResponseModel, error) {
+
+	row, err := database.DBSplash.Query("SELECT newsread.id, newsread.read_at, newsread.newspaper_id, newspaper.image_url, newspaper.name FROM newsread INNER JOIN newspaper ON newsread.newspaper_id = newspaper.id ORDER BY newsread.read_at DESC")
+
+	if err != nil {
+		return nil, err
+	}
+	defer row.Close()
+
+	newsReadList := []model.NewsFEResponseModel{}
+	for row.Next() {
+		var newsread model.NewsFEResponseModel
+		err := row.Scan(&newsread.Id, &newsread.Read_At, &newsread.Newspaper_Id, &newsread.Image_Url, &newsread.Name)
+
+		if err != nil {
+			fmt.Printf("repository.GetNewsRead error: ", err.Error())
+			return nil, err
+		}
+		newsReadList = append(newsReadList, newsread)
+	}
+	return newsReadList, nil
 }

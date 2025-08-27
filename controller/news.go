@@ -92,6 +92,17 @@ func GetAllNewspapers(c *fiber.Ctx) error {
 	return c.JSON(&fiber.Map{"statusCode": 0, "data": allNewspapers})
 }
 
+func GetNewsReadAll(c *fiber.Ctx) error {
+	newsreadAll, err := repository.GetNewsReadAll()
+
+	if err != nil {
+
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+
+	return c.JSON(&fiber.Map{"statusCode": 0, "data": newsreadAll})
+}
+
 // ********HELPER FUNCTION FOR checking new related errorß
 func checkNewspaperInputFromRequestBody() bool {
 

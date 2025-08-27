@@ -15,6 +15,7 @@ func NewspaperRoutes(app *fiber.App) {
 }
 
 func NewsReadRoutes(app *fiber.App) {
-	api := app.Group("/v1/newsread", controller.MiddlewareCheckUser)
-	api.Group("/", controller.AddNewsRead)
+	api := app.Group("/v1/news-read", controller.MiddlewareCheckUser)
+	api.Post("/", controller.AddNewsRead)
+	api.Get("/all-read", controller.GetNewsReadAll)
 }
