@@ -57,6 +57,12 @@ func AddNewsRead(c *fiber.Ctx) error {
 
 	}
 	p.Id = uuid.New().String()
+	newsreadList, err := repository.GetNewsreadwithDateAndName(p.Newspaper_Id, p.Read_At)
+
+	if len(newsreadList) > 0 || err != nil {
+		//fmt.Println(newsreadList, err.Error())
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "Duplicate Data Exists"})
+	}
 	err = repository.AddNewsRead(*p)
 
 	if err != nil {

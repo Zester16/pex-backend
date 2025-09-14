@@ -18,6 +18,33 @@ func AddNewsRead(newsread model.NewspaperreadingModel) error {
 	return err
 }
 
+// get count of news read by pass ing two parameters and see if newspaper has been read(without using read_status parameter)
+func GetNewsreadwithDateAndName(newspaperId string, read_at *int64) ([]model.NewspaperreadingModel, error) {
+	row, err := database.DBSplash.Query("SELECT id, read_at, newspaper_id FROM newsread WHERE newspaper_id=$1 AND read_at=$2", newspaperId, read_at)
+
+	var newsreadArray = []model.NewspaperreadingModel{}
+	if err != nil {
+		return nil, err
+	}
+
+	defer row.Close()
+
+	for row.Next() {
+		var newsRead model.NewspaperreadingModel
+
+		err := row.Scan(&newsRead.Id, &newsRead.Read_At, &newsRead.Newspaper_Id)
+
+		if err != nil {
+			fmt.Println(".repository.GetNewsreadwithDateAndTime.error", err.Error())
+			return nil, err
+		}
+
+		newsreadArray = append(newsreadArray, newsRead)
+	}
+
+	return newsreadArray, err
+}
+
 // ********** To Get Paginated newspaper list*********************************
 // first iteration does not need to pass id, but further iterations need to pass id
 func GetNewspaperPaginated(id string) ([]model.NewspaperModel, error) {
