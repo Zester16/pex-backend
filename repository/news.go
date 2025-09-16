@@ -7,14 +7,39 @@ import (
 	"pex.oschmid.com/model"
 )
 
+// add newspaper
 func AddNewspaper(newspaper model.NewspaperModel) error {
 
 	_, err := database.DBSplash.Query("INSERT INTO newspaper(id,name,created_at,image_url,epaper_url) VALUES ($1,$2,$3,$4,$5)", newspaper.Id, newspaper.Name, newspaper.Created_At, newspaper.Image_Url, newspaper.Epaper_Url)
 	return err
 }
 
+// add newsread
 func AddNewsRead(newsread model.NewspaperreadingModel) error {
 	_, err := database.DBSplash.Query("INSERT INTO newsread(id,read_at,newspaper_id) VALUES ($1,$2,$3)", newsread.Id, newsread.Read_At, newsread.Newspaper_Id)
+	return err
+}
+
+// add new last read date and total count
+func UpdateNewspaperLastReadAndTodaysDate(id string, readDate *int64) error {
+	newspaper, err := GetNewspaperById(id)
+
+	if err != nil {
+
+		return err
+	}
+	readCount := newspaper.Total_Read + 1
+	lastRead := newspaper.Last_Read
+	if lastRead == nil {
+		lastRead = readDate
+	} else if *readDate > *newspaper.Last_Read {
+		lastRead = readDate
+	}
+
+	fmt.Println("UpdateNewspaperLastReadAndTodaysDate", lastRead, readCount)
+
+	_, err = database.DBSplash.Query("UPDATE newspaper SET total_read=$1, last_read=$2 WHERE id=$3", readCount, &lastRead, id)
+
 	return err
 }
 
@@ -43,6 +68,30 @@ func GetNewsreadwithDateAndName(newspaperId string, read_at *int64) ([]model.New
 	}
 
 	return newsreadArray, err
+}
+
+// *************Get Newspaper by id*********************************************
+func GetNewspaperById(id string) (model.NewspaperModel, error) {
+
+	row, err := database.DBSplash.Query("SELECT id,name,total_read,last_read FROM newspaper WHERE id=$1", id)
+
+	FUNCTION_NAME := "GetNewspaperById"
+	if err != nil {
+		fmt.Println(FUNCTION_NAME, " error:", err.Error())
+		return model.NewspaperModel{}, err
+	}
+
+	var newspaper model.NewspaperModel
+
+	for row.Next() {
+		err := row.Scan(&newspaper.Id, &newspaper.Name, &newspaper.Total_Read, &newspaper.Last_Read)
+
+		if err != nil {
+			return newspaper, err
+		}
+	}
+	return newspaper, nil
+
 }
 
 // ********** To Get Paginated newspaper list*********************************
