@@ -24,6 +24,7 @@ type NewsFEResponseModel struct {
 	Id           string
 	Read_At      *int64 `json:"read_at"`
 	Newspaper_Id string `json:"newspaper_id"`
+	Read_Status  *int8  `json:"read_status"`
 	Image_Url    string `json:"image_url"`
 	Name         string `json:"name"`
 }

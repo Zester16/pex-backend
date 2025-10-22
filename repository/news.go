@@ -43,6 +43,15 @@ func UpdateNewspaperLastReadAndTodaysDate(id string, readDate *int64) error {
 	return err
 }
 
+// update newsread status
+func UpdateNewsReadStatus(newspaperId string, read_status *int8) error {
+
+	fmt.Println(read_status)
+	_, err := database.DBSplash.Query("UPDATE newsread SET read_status=$2 where id=$1", newspaperId, &read_status)
+
+	return err
+}
+
 // get count of news read by pass ing two parameters and see if newspaper has been read(without using read_status parameter)
 func GetNewsreadwithDateAndName(newspaperId string, read_at *int64) ([]model.NewspaperreadingModel, error) {
 	row, err := database.DBSplash.Query("SELECT id, read_at, newspaper_id FROM newsread WHERE newspaper_id=$1 AND read_at=$2", newspaperId, read_at)
@@ -98,7 +107,7 @@ func GetNewspaperById(id string) (model.NewspaperModel, error) {
 // first iteration does not need to pass id, but further iterations need to pass id
 func GetNewspaperPaginated(id string) ([]model.NewspaperModel, error) {
 
-	row, err := database.DBSplash.Query("SELECT id,name,image_url FROM newspaper where id > $1 ORDER BY id LIMIT 2", id)
+	row, err := database.DBSplash.Query("SELECT id,name,image_url,total_read,last_read,created_at FROM newspaper where id > $1 ORDER BY id LIMIT 2", id)
 
 	if err != nil {
 		return nil, err
@@ -109,7 +118,7 @@ func GetNewspaperPaginated(id string) ([]model.NewspaperModel, error) {
 	for row.Next() {
 		var newspaper model.NewspaperModel
 
-		err := row.Scan(&newspaper.Id, &newspaper.Name, &newspaper.Image_Url)
+		err := row.Scan(&newspaper.Id, &newspaper.Name, &newspaper.Image_Url, &newspaper.Total_Read, &newspaper.Last_Read, &newspaper.Created_At)
 
 		if err != nil {
 			return []model.NewspaperModel{}, err
@@ -162,7 +171,7 @@ func GetNewspaperTotalCount() (int, error) {
 
 func GetNewsReadAll() ([]model.NewsFEResponseModel, error) {
 
-	row, err := database.DBSplash.Query("SELECT newsread.id, newsread.read_at, newsread.newspaper_id, newspaper.image_url, newspaper.name FROM newsread INNER JOIN newspaper ON newsread.newspaper_id = newspaper.id ORDER BY newsread.read_at DESC")
+	row, err := database.DBSplash.Query("SELECT newsread.id, newsread.read_at, newsread.read_status, newsread.newspaper_id, newspaper.image_url, newspaper.name FROM newsread INNER JOIN newspaper ON newsread.newspaper_id = newspaper.id ORDER BY newsread.read_at DESC")
 
 	if err != nil {
 		return nil, err
@@ -172,7 +181,7 @@ func GetNewsReadAll() ([]model.NewsFEResponseModel, error) {
 	newsReadList := []model.NewsFEResponseModel{}
 	for row.Next() {
 		var newsread model.NewsFEResponseModel
-		err := row.Scan(&newsread.Id, &newsread.Read_At, &newsread.Newspaper_Id, &newsread.Image_Url, &newsread.Name)
+		err := row.Scan(&newsread.Id, &newsread.Read_At, &newsread.Read_Status, &newsread.Newspaper_Id, &newsread.Image_Url, &newsread.Name)
 
 		if err != nil {
 			fmt.Printf("repository.GetNewsRead error: ", err.Error())

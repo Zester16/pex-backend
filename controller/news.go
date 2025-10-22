@@ -3,6 +3,7 @@ package controller
 //"strconv"
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -76,6 +77,41 @@ func AddNewsRead(c *fiber.Ctx) error {
 		return c.Status(200).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err.Error()})
 	}
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
+}
+
+// update news read state
+func UpdateNewsReadStatus(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var testInt int8 = -1
+	var readStatus *int8 = &testInt
+	headers := c.GetReqHeaders()
+	fmt.Println("UpdateNewsReadStatus Header: ", headers)
+	for key, values := range headers {
+		if key == "Readstatus" {
+			readStatusString, err := strconv.ParseInt(values[0], 10, 8)
+			fmt.Println(readStatusString)
+			if err != nil {
+				return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err.Error()})
+			}
+			var myInt8 int8 = (int8(readStatusString))
+			readStatus = &myInt8
+		}
+
+	}
+	fmt.Println(&readStatus)
+
+	if *readStatus == -1 {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "No "})
+
+	}
+	err := repository.UpdateNewsReadStatus(id, readStatus)
+
+	if err != nil {
+
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+
+	return c.Status(200).JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
 
 // ****READ NEWS
