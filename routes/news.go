@@ -7,12 +7,16 @@ import (
 
 func NewspaperRoutes(app *fiber.App) {
 
-	api := app.Group("v1/newspaper")
+	api := app.Group("v1/newspaper", controller.MiddlewareCheckUser)
 	api.Post("/", controller.AddNewspaper)
+	api.Get("/", controller.GetNewspapersPaginated)
+	api.Get("/all-newspapers", controller.GetAllNewspapers)
 
 }
 
 func NewsReadRoutes(app *fiber.App) {
-	api := app.Group("/v1/newsread")
-	api.Group("/", controller.AddNewsRead)
+	api := app.Group("/v1/news-read", controller.MiddlewareCheckUser)
+	api.Post("/", controller.AddNewsRead)
+	api.Patch("/:id/update-news-read-status", controller.UpdateNewsReadStatus)
+	api.Get("/all-read", controller.GetNewsReadAll)
 }

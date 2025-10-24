@@ -1,6 +1,11 @@
 package controller
 
+//"strconv"
 import (
+	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"pex.oschmid.com/model"
@@ -14,13 +19,24 @@ func AddNewspaper(c *fiber.Ctx) error {
 	err := c.BodyParser(p)
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"status": 1,
-
+			"status":  1,
 			"message": err,
 		})
 
 	}
+	if p.Name == "" {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "Kindly add name of newspaper"})
+	}
+	if p.Image_Url == "" {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "Kindly add image url of newspaper"})
+	}
+	if p.Epaper_Url == "" {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "epaper url should not be empty"})
+	}
+
 	p.Id = uuid.New().String()
+	currentTime := time.Now().UTC().Unix()
+	p.Created_At = &currentTime
 	err = repository.AddNewspaper(*p)
 
 	if err != nil {
@@ -28,8 +44,6 @@ func AddNewspaper(c *fiber.Ctx) error {
 	}
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
-
-//****READ NEWS
 
 // Adds newspaper read date
 func AddNewsRead(c *fiber.Ctx) error {
@@ -44,14 +58,102 @@ func AddNewsRead(c *fiber.Ctx) error {
 
 	}
 	p.Id = uuid.New().String()
+	newsreadList, err := repository.GetNewsreadwithDateAndName(p.Newspaper_Id, p.Read_At)
+
+	if len(newsreadList) > 0 || err != nil {
+		//fmt.Println(newsreadList, err.Error())
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "Duplicate Data Exists"})
+	}
+	newsread := p
 	err = repository.AddNewsRead(*p)
 
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{"statusCode": 400, "statusMessage": err.Error()})
 	}
+
+	err = repository.UpdateNewspaperLastReadAndTodaysDate(newsread.Newspaper_Id, newsread.Read_At)
+
+	if err != nil {
+		return c.Status(200).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err.Error()})
+	}
 	return c.JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
 }
 
-func GetPaginatedNewsLettter(c *fiber.Ctx) error {
-	return &fiber.Error{}
+// update news read state
+func UpdateNewsReadStatus(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var testInt int8 = -1
+	var readStatus *int8 = &testInt
+	headers := c.GetReqHeaders()
+	fmt.Println("UpdateNewsReadStatus Header: ", headers)
+	for key, values := range headers {
+		if key == "Readstatus" {
+			readStatusString, err := strconv.ParseInt(values[0], 10, 8)
+			fmt.Println(readStatusString)
+			if err != nil {
+				return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err.Error()})
+			}
+			var myInt8 int8 = (int8(readStatusString))
+			readStatus = &myInt8
+		}
+
+	}
+	fmt.Println(&readStatus)
+
+	if *readStatus == -1 {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": "No "})
+
+	}
+	err := repository.UpdateNewsReadStatus(id, readStatus)
+
+	if err != nil {
+
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+
+	return c.Status(200).JSON(&fiber.Map{"statusCode": 0, "statusMessage": "success"})
+}
+
+// ****READ NEWS
+// get all news letters in order as most read
+func GetNewspapersPaginated(c *fiber.Ctx) error {
+
+	id := c.Query("id")
+	fmt.Println("id", id)
+	resp, err := repository.GetNewspaperPaginated(id)
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+	total, err := repository.GetNewspaperTotalCount()
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": 1, "statusMessage": err})
+	}
+	return c.JSON(&fiber.Map{"statusCode": 0, "data": resp, "total": total})
+}
+
+func GetAllNewspapers(c *fiber.Ctx) error {
+	allNewspapers, err := repository.GetNewspapersAll()
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+	return c.JSON(&fiber.Map{"statusCode": 0, "data": allNewspapers})
+}
+
+func GetNewsReadAll(c *fiber.Ctx) error {
+	newsreadAll, err := repository.GetNewsReadAll()
+
+	if err != nil {
+
+		return c.Status(400).JSON(&fiber.Map{"statusCode": "1", "statusMessage": err.Error()})
+	}
+
+	return c.JSON(&fiber.Map{"statusCode": 0, "data": newsreadAll})
+}
+
+// ********HELPER FUNCTION FOR checking new related errorß
+func checkNewspaperInputFromRequestBody() bool {
+
+	return true
 }

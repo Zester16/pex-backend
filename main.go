@@ -24,8 +24,8 @@ func main() {
 	if deployEnv == "dev" {
 		app.Use(cors.New(
 			cors.Config{
-				AllowOrigins:     "http://localhost:3000",
-				AllowHeaders:     "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+				AllowOrigins: "http://localhost:3000",
+				//AllowHeaders:     "Origin, X-Requested-With, Content-Type, Accept, Authorization",
 				AllowMethods:     "GET,PUT,POST,DELETE,PATCH,OPTIONS",
 				AllowCredentials: true,
 			}))
