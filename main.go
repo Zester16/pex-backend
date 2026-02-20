@@ -20,7 +20,10 @@ func main() {
 		fmt.Print("Error loading .env file")
 	}
 	deployEnv := os.Getenv("DEPLOY_ENV")
-	app := fiber.New()
+	app := fiber.New(fiber.Config{Network: "tcp6"})
+	//for prod
+	ipv6Port := "[fd00::6:b2a8]:8100"
+	var port string
 	if deployEnv == "dev" {
 		app.Use(cors.New(
 			cors.Config{
@@ -29,13 +32,16 @@ func main() {
 				AllowMethods:     "GET,PUT,POST,DELETE,PATCH,OPTIONS",
 				AllowCredentials: true,
 			}))
+		port = ":4000"
 	} else {
 		app.Use(cors.New(
 			cors.Config{
-				AllowOrigins:     "http://localhost:3000",
-				AllowHeaders:     "Origin, Content-Type, Accept",
+				AllowOrigins: "https://pex-mbao.onrender.com/",
+				AllowMethods: "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+				//AllowHeaders:     "Origin, Content-Type, Accept",
 				AllowCredentials: true,
 			}))
+		port = ipv6Port
 
 	}
 	sessKey := os.Getenv("COOKIE_KEY")
@@ -65,5 +71,7 @@ func main() {
 	//routing for news
 	routes.NewspaperRoutes(app)
 	routes.NewsReadRoutes(app)
-	log.Fatal(app.Listen(":4000"))
+
+	//ipv6Port := "[::1]:8100"
+	log.Fatal(app.Listen(port))
 }
