@@ -158,6 +158,12 @@ func GetAllSessions(c *fiber.Ctx) error {
 	})
 }
 
+// Delete old sessions for user from database for cron job
+func DeleteSessionCronJob() {
+	fmt.Println("Starting cron Job: Delete session")
+	repository.DeleteThreeMonthOldSession()
+}
+
 // endpoint to get all session
 // func GetAllSessionsWithPagination(c *fiber.Ctx) error {
 // 	cSid := ""
