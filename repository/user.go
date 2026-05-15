@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"pex.oschmid.com/database"
 	"pex.oschmid.com/model"
@@ -115,5 +116,19 @@ func GetAllSessions() ([]model.SessionModel, error) {
 	//}
 
 	return allSession, err
+
+}
+
+func DeleteThreeMonthOldSession() {
+	funcName := "delete-three-month-old-session: "
+	todayDateTime := time.Now().Unix()
+	_, err := database.DBSplash.Query("DELETE FROM session WHERE expiry<=$1", todayDateTime)
+
+	if err != nil {
+		fmt.Println(funcName, " err:", err.Error())
+		return
+	} else {
+		fmt.Println(funcName, "success")
+	}
 
 }

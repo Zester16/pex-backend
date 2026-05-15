@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 	"pex.oschmid.com/controller"
 	"pex.oschmid.com/database"
 	"pex.oschmid.com/routes"
@@ -72,6 +73,13 @@ func main() {
 	routes.NewspaperRoutes(app)
 	routes.NewsReadRoutes(app)
 
+	//cron job
+	crn := cron.New()
+
+	crn.AddFunc("2 0 * * *", controller.DeleteSessionCronJob)
+	//TEST
+	//crn.AddFunc("* * * * *", controller.DeleteSessionCronJob)
+	crn.Start()
 	//ipv6Port := "[::1]:8100"
 	log.Fatal(app.Listen(port))
 }
