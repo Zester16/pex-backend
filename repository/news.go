@@ -10,13 +10,15 @@ import (
 // add newspaper
 func AddNewspaper(newspaper model.NewspaperModel) error {
 
-	_, err := database.DBSplash.Query("INSERT INTO newspaper(id,name,created_at,image_url,epaper_url) VALUES ($1,$2,$3,$4,$5)", newspaper.Id, newspaper.Name, newspaper.Created_At, newspaper.Image_Url, newspaper.Epaper_Url)
+	resp, err := database.DBSplash.Query("INSERT INTO newspaper(id,name,created_at,image_url,epaper_url) VALUES ($1,$2,$3,$4,$5)", newspaper.Id, newspaper.Name, newspaper.Created_At, newspaper.Image_Url, newspaper.Epaper_Url)
+	resp.Close()
 	return err
 }
 
 // add newsread
 func AddNewsRead(newsread model.NewspaperreadingModel) error {
-	_, err := database.DBSplash.Query("INSERT INTO newsread(id,read_at,newspaper_id) VALUES ($1,$2,$3)", newsread.Id, newsread.Read_At, newsread.Newspaper_Id)
+	cursor, err := database.DBSplash.Query("INSERT INTO newsread(id,read_at,newspaper_id) VALUES ($1,$2,$3)", newsread.Id, newsread.Read_At, newsread.Newspaper_Id)
+	cursor.Close()
 	return err
 }
 
@@ -38,8 +40,9 @@ func UpdateNewspaperLastReadAndTodaysDate(id string, readDate *int64) error {
 
 	fmt.Println("UpdateNewspaperLastReadAndTodaysDate", lastRead, readCount)
 
-	_, err = database.DBSplash.Query("UPDATE newspaper SET total_read=$1, last_read=$2 WHERE id=$3", readCount, &lastRead, id)
+	cursor, err := database.DBSplash.Query("UPDATE newspaper SET total_read=$1, last_read=$2 WHERE id=$3", readCount, &lastRead, id)
 
+	cursor.Close()
 	return err
 }
 
@@ -47,8 +50,9 @@ func UpdateNewspaperLastReadAndTodaysDate(id string, readDate *int64) error {
 func UpdateNewsReadStatus(newspaperId string, read_status *int8) error {
 
 	fmt.Println(read_status)
-	_, err := database.DBSplash.Query("UPDATE newsread SET read_status=$2 where id=$1", newspaperId, &read_status)
+	cursor, err := database.DBSplash.Query("UPDATE newsread SET read_status=$2 where id=$1", newspaperId, &read_status)
 
+	cursor.Close()
 	return err
 }
 
@@ -90,6 +94,7 @@ func GetNewspaperById(id string) (model.NewspaperModel, error) {
 		return model.NewspaperModel{}, err
 	}
 
+	defer row.Close()
 	var newspaper model.NewspaperModel
 
 	for row.Next() {
@@ -158,6 +163,7 @@ func GetNewspapersAll() ([]model.NewspaperModel, error) {
 func GetNewspaperTotalCount() (int, error) {
 	row, err := database.DBSplash.Query("SELECT COUNT(*) from newspaper")
 	total := 0
+
 	for row.Next() {
 
 		if err != nil {
