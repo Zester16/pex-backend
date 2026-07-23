@@ -72,7 +72,7 @@ func main() {
 	//routing for news
 	routes.NewspaperRoutes(app)
 	routes.NewsReadRoutes(app)
-
+	routes.BookRoute(app)
 	//cron job
 	crn := cron.New()
 
