@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"pex.oschmid.com/model"
 )
 
-/**
+/*
+*
 * This service is for searching all book related queries
  */
 
@@ -24,10 +26,10 @@ func GetBooksFromGoogleBooks(searchText string) {
 func GetBooksFromOpenLibrary(searchText string) ([]model.BookResponse, error) {
 
 	client := &http.Client{}
-
+	var openApiHeader = os.Getenv("PEX_HEADER")
 	fmt.Println("GetBooksFromOpenLibrary: kickstart checking books")
 	req, err := http.NewRequest("GET", "https://openlibrary.org/search.json", nil)
-
+	req.Header.Add("User-Agent", openApiHeader)
 	updatedText := strings.Join(strings.Split(searchText, " "), "+")
 	if err != nil {
 		fmt.Println("services.GetBooksFromOpenLibraryError", err)
@@ -71,6 +73,9 @@ func GetBooksFromOpenLibrary(searchText string) ([]model.BookResponse, error) {
 	return returnObj, nil
 }
 
+/*
+* mapper function which maps return response from response obtained from OpenLibrary
+ */
 func mapOpenLibraryToBookReturnResponse(openLibBook model.OpenLibraryIndividualBook) model.BookResponse {
 	var isbn string
 	if len(openLibBook.Availability.Isbn) > 0 {
