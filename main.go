@@ -62,7 +62,6 @@ func main() {
 		})
 
 	})
-
 	//external app routings
 	//routing for splash /v1/splash/
 	routes.RoutesSplash(app)
@@ -72,7 +71,7 @@ func main() {
 	//routing for news
 	routes.NewspaperRoutes(app)
 	routes.NewsReadRoutes(app)
-
+	routes.BookRoute(app)
 	//cron job
 	crn := cron.New()
 
