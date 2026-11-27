@@ -122,13 +122,13 @@ func GetAllSessions() ([]model.SessionModel, error) {
 func DeleteThreeMonthOldSession() {
 	funcName := "delete-three-month-old-session: "
 	todayDateTime := time.Now().Unix()
-	_, err := database.DBSplash.Query("DELETE FROM session WHERE expiry<=$1", todayDateTime)
+	row, err := database.DBSplash.Query("DELETE FROM session WHERE expiry<=$1", todayDateTime)
 
 	if err != nil {
 		fmt.Println(funcName, " err:", err.Error())
-		return
+
 	} else {
 		fmt.Println(funcName, "success")
 	}
-
+	defer row.Close()
 }

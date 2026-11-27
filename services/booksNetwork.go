@@ -11,13 +11,19 @@ import (
 )
 
 /*
-*
+* TODO: Need to implement this feature
 * This service is for searching all book related queries
  */
 
-func GetBooksFromGoogleBooks(searchText string) {
+func GetBooksFromGoogleBooks(searchText string, searchType string) {
 
-	//http.Get
+	// baseUrl := os.Getenv("GOOGLE_BOOKS_API")
+	// subString := "books/v1/volumes"
+	// client := &http.Client{}
+	// fullUrl := baseUrl + subString
+	// req, err := http.NewRequest("GET", fullUrl, nil)
+	// updatedText := strings.Join(strings.Split(searchText, " "), "+")
+
 }
 
 /**

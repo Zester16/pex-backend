@@ -62,7 +62,6 @@ func main() {
 		})
 
 	})
-
 	//external app routings
 	//routing for splash /v1/splash/
 	routes.RoutesSplash(app)
